@@ -1,0 +1,195 @@
+21:06:17 - DEBUG: ask_device_and_start initiated
+21:06:17 - DEBUG: Found 6 devices
+21:06:21 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:06:21 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:06:21 - DEBUG: Sniffer started successfully. Listening...
+21:06:25 - ID AUTO-DETECT (HP Packet): 279647
+21:06:35 - ID AUTO-DETECT (HP Packet): 279647
+21:06:40 - ID AUTO-DETECT (HP Packet): 279647
+21:06:42 - ID AUTO-DETECT (HP Packet): 279647
+21:07:09 - ID AUTO-DETECT (HP Packet): 279647
+21:07:14 - ID AUTO-DETECT (HP Packet): 4294966209
+21:07:16 - ID AUTO-DETECT (HP Packet): 279647
+21:07:21 - ID AUTO-DETECT (HP Packet): 279647
+21:07:40 - ID AUTO-DETECT (HP Packet): 279647
+21:08:14 - ID AUTO-DETECT (HP Packet): 279647
+21:08:19 - ID AUTO-DETECT (HP Packet): 279647
+21:08:40 - ID AUTO-DETECT (HP Packet): 279647
+21:08:52 - DEBUG: ask_device_and_start initiated
+21:08:52 - DEBUG: Found 6 devices
+21:08:57 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:08:57 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:08:57 - DEBUG: Sniffer started successfully. Listening...
+21:09:00 - ID AUTO-DETECT (HP Packet): 279647
+21:09:58 - DEBUG: ask_device_and_start initiated
+21:09:58 - DEBUG: Found 6 devices
+21:10:02 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:10:02 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:10:02 - DEBUG: Sniffer started successfully. Listening...
+21:10:10 - ID AUTO-DETECT (HP Packet): 4294966491
+21:10:14 - ID AUTO-DETECT (HP Packet): 279647
+21:17:32 - DEBUG: ask_device_and_start initiated
+21:17:32 - DEBUG: Found 6 devices
+21:17:36 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:17:36 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:17:36 - DEBUG: Sniffer started successfully. Listening...
+21:17:43 - ID AUTO-DETECT (HP Packet): 4294966238
+21:17:58 - ID AUTO-DETECT (HP Packet): 4294965162
+21:18:01 - ID AUTO-DETECT (HP Packet): 279647
+21:18:33 - DEBUG: ask_device_and_start initiated
+21:18:33 - DEBUG: Found 6 devices
+21:19:01 - DEBUG: ask_device_and_start initiated
+21:19:01 - DEBUG: Found 6 devices
+21:19:03 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:19:03 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:19:03 - DEBUG: Sniffer started successfully. Listening...
+21:19:07 - ID AUTO-DETECT (HP Packet): 4294965162
+21:19:11 - ID AUTO-DETECT (HP Packet): 279647
+21:19:31 - DEBUG: ask_device_and_start initiated
+21:19:31 - DEBUG: Found 6 devices
+21:19:32 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:19:32 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:19:32 - DEBUG: Sniffer started successfully. Listening...
+21:26:49 - DEBUG: ask_device_and_start initiated
+21:26:49 - DEBUG: Found 6 devices
+21:26:52 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:26:52 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:26:52 - DEBUG: Sniffer started successfully. Listening...
+21:27:01 - ID AUTO-DETECT (HP Packet): 4294965162
+21:27:06 - ID AUTO-DETECT (HP Packet): 279647
+21:31:49 - DEBUG: ask_device_and_start initiated
+21:31:49 - DEBUG: Found 6 devices
+21:31:50 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:31:50 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:31:50 - DEBUG: Sniffer started successfully. Listening...
+21:31:57 - ID AUTO-DETECT (HP Packet): 4294965162
+21:35:24 - DEBUG: ask_device_and_start initiated
+21:35:24 - DEBUG: Found 6 devices
+21:35:26 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:35:26 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:35:26 - DEBUG: Sniffer started successfully. Listening...
+21:35:30 - ID AUTO-DETECT (HP Packet): 148136
+21:35:43 - ID AUTO-DETECT (HP Packet): 279647
+21:35:46 - ID AUTO-DETECT (HP Packet): 279647
+21:35:57 - ID AUTO-DETECT (HP Packet): 279647
+21:38:57 - DEBUG: ask_device_and_start initiated
+21:38:57 - DEBUG: Found 6 devices
+21:38:59 - DEBUG: Confirm clicked but no selection
+21:39:00 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:39:00 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:39:00 - DEBUG: Sniffer started successfully. Listening...
+21:39:08 - ID AUTO-DETECT (Dmg Packet): 279647
+21:39:54 - DEBUG: ask_device_and_start initiated
+21:39:54 - DEBUG: Found 6 devices
+21:39:57 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:39:57 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:39:57 - DEBUG: Sniffer started successfully. Listening...
+21:40:09 - ID AUTO-DETECT (Dmg Packet): 279647
+21:42:34 - DEBUG: ask_device_and_start initiated
+21:42:34 - DEBUG: Found 6 devices
+21:42:44 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:42:44 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:42:44 - DEBUG: Sniffer started successfully. Listening...
+21:48:57 - DEBUG: ask_device_and_start initiated
+21:48:57 - DEBUG: Found 6 devices
+21:49:03 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:49:04 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:49:04 - DEBUG: Sniffer started successfully. Listening...
+21:49:19 - DEBUG: ask_device_and_start initiated
+21:49:19 - DEBUG: Found 6 devices
+21:49:20 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:49:22 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:49:22 - DEBUG: Sniffer started successfully. Listening...
+21:49:22 - DEBUG: ask_device_and_start initiated
+21:49:22 - DEBUG: Found 6 devices
+21:49:23 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:49:24 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:49:24 - DEBUG: Sniffer started successfully. Listening...
+21:50:14 - DEBUG: ask_device_and_start initiated
+21:50:14 - DEBUG: Found 6 devices
+21:50:16 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:50:17 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:50:17 - DEBUG: Sniffer started successfully. Listening...
+21:50:20 - DEBUG: ask_device_and_start initiated
+21:50:20 - DEBUG: Found 6 devices
+21:50:22 - DEBUG: User selected: WAN Miniport (Network Monitor) (\Device\NPF_{BF7F3F65-67E0-4FEB-BEA5-9DFF14DA3293})
+21:50:23 - DEBUG: Starting sniffer loop on \Device\NPF_{BF7F3F65-67E0-4FEB-BEA5-9DFF14DA3293}
+21:50:23 - DEBUG: Sniffer started successfully. Listening...
+21:50:26 - DEBUG: ask_device_and_start initiated
+21:50:26 - DEBUG: Found 6 devices
+21:50:28 - DEBUG: User selected: WAN Miniport (IPv6) (\Device\NPF_{9E834DDD-45FD-423B-AA67-206B8746B83B})
+21:50:29 - DEBUG: Starting sniffer loop on \Device\NPF_{9E834DDD-45FD-423B-AA67-206B8746B83B}
+21:50:29 - DEBUG: Sniffer started successfully. Listening...
+21:50:29 - DEBUG: ask_device_and_start initiated
+21:50:29 - DEBUG: Found 6 devices
+21:50:31 - DEBUG: User selected: WAN Miniport (IP) (\Device\NPF_{43995ED7-31E5-4EB7-B970-7CD6F78796BD})
+21:50:32 - DEBUG: Starting sniffer loop on \Device\NPF_{43995ED7-31E5-4EB7-B970-7CD6F78796BD}
+21:50:32 - DEBUG: Sniffer started successfully. Listening...
+21:50:33 - DEBUG: ask_device_and_start initiated
+21:50:33 - DEBUG: Found 6 devices
+21:50:35 - DEBUG: User selected: Hyper-V Virtual Ethernet Adapter (\Device\NPF_{0136DAC5-EBA8-4250-92E7-44BD19150061})
+21:50:36 - DEBUG: Starting sniffer loop on \Device\NPF_{0136DAC5-EBA8-4250-92E7-44BD19150061}
+21:50:36 - DEBUG: Sniffer started successfully. Listening...
+21:50:37 - DEBUG: ask_device_and_start initiated
+21:50:37 - DEBUG: Found 6 devices
+21:50:39 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:50:40 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:50:40 - DEBUG: Sniffer started successfully. Listening...
+21:50:47 - DEBUG: ask_device_and_start initiated
+21:50:47 - DEBUG: Found 6 devices
+21:50:48 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:50:49 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:50:49 - DEBUG: Sniffer started successfully. Listening...
+21:53:18 - DEBUG: ask_device_and_start initiated
+21:53:18 - DEBUG: Found 6 devices
+21:53:29 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:53:30 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:53:30 - DEBUG: Sniffer started successfully. Listening...
+21:53:42 - DEBUG: ask_device_and_start initiated
+21:53:42 - DEBUG: Found 6 devices
+21:53:43 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:53:44 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:53:44 - DEBUG: Sniffer started successfully. Listening...
+21:53:51 - DEBUG: ask_device_and_start initiated
+21:53:51 - DEBUG: Found 6 devices
+21:53:55 - DEBUG: User selected: WAN Miniport (Network Monitor) (\Device\NPF_{BF7F3F65-67E0-4FEB-BEA5-9DFF14DA3293})
+21:53:56 - DEBUG: Starting sniffer loop on \Device\NPF_{BF7F3F65-67E0-4FEB-BEA5-9DFF14DA3293}
+21:53:56 - DEBUG: Sniffer started successfully. Listening...
+21:54:13 - DEBUG: ask_device_and_start initiated
+21:54:13 - DEBUG: Found 6 devices
+21:54:15 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:54:16 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:54:16 - DEBUG: Sniffer started successfully. Listening...
+21:57:51 - DEBUG: ask_device_and_start initiated
+21:57:51 - DEBUG: Found 6 devices
+21:57:53 - DEBUG: User selected: Adapter for loopback traffic capture (\Device\NPF_Loopback)
+21:57:54 - DEBUG: Starting sniffer loop on \Device\NPF_Loopback
+21:57:54 - DEBUG: Sniffer started successfully. Listening...
+21:58:03 - DEBUG: ask_device_and_start initiated
+21:58:03 - DEBUG: Found 6 devices
+21:58:04 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+21:58:05 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+21:58:05 - DEBUG: Sniffer started successfully. Listening...
+21:58:10 - DEBUG: ask_device_and_start initiated
+21:58:10 - DEBUG: Found 6 devices
+22:01:09 - DEBUG: ask_device_and_start initiated
+22:01:09 - DEBUG: Found 6 devices
+22:01:10 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+22:01:11 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+22:01:11 - DEBUG: Sniffer started successfully. Listening...
+22:01:17 - DEBUG: ask_device_and_start initiated
+22:01:17 - DEBUG: Found 6 devices
+22:01:18 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+22:01:19 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+22:01:19 - DEBUG: Sniffer started successfully. Listening...
+22:01:25 - DEBUG: ask_device_and_start initiated
+22:01:25 - DEBUG: Found 6 devices
+22:01:26 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+22:01:26 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+22:01:26 - DEBUG: Sniffer started successfully. Listening...
+22:01:27 - ID AUTO-DETECT (HP Packet): 222028
+22:07:20 - DEBUG: ask_device_and_start initiated
+22:07:20 - DEBUG: Found 6 devices
+22:07:22 - DEBUG: User selected: Intel(R) Ethernet Connection (2) I219-V (\Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC})
+22:07:22 - DEBUG: Starting sniffer loop on \Device\NPF_{1945CBB1-3BC9-47E4-A642-E1FB26CA4CEC}
+22:07:22 - DEBUG: Sniffer started successfully. Listening...

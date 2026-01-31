@@ -4,9 +4,8 @@ from tkinter import ttk, simpledialog, messagebox, colorchooser
 from collections import defaultdict
 
 # --- CONFIGURACIÓN ---
-REAL_HOSTNAME = "game.dreadmyst.com"
+
 REAL_PORT = 16383
-HOSTS_PATH = r"C:\Windows\System32\drivers\etc\hosts"
 CONFIG_FILE = "dps_names.json"
 SETTINGS_FILE = "dps_settings.json"
 
@@ -21,6 +20,30 @@ COLOR_DPS_BAR = "#66BB6A"
 FONT_TITLE = ("Segoe UI", 9, "bold")
 FONT_MONO = ("Consolas", 9)
 FONT_OVERLAY = ("Segoe UI", 9, "bold")
+
+# --- CTYPES STRUCTURES FOR NPCAP ---
+from ctypes import *
+class sockaddr(Structure):
+    _fields_ = [("sa_family", c_ushort), ("sa_data", c_ubyte * 14)]
+class sockaddr_in(Structure):
+    _fields_ = [("sin_family", c_short), ("sin_port", c_ushort), ("sin_addr", c_ubyte * 4), ("sin_zero", c_char * 8)]
+class pcap_addr(Structure):
+    pass
+pcap_addr._fields_ = [("next", POINTER(pcap_addr)), ("addr", POINTER(sockaddr)), ("netmask", POINTER(sockaddr)), ("broadaddr", POINTER(sockaddr)), ("dstaddr", POINTER(sockaddr))]
+class pcap_if(Structure):
+    pass
+pcap_if._fields_ = [("next", POINTER(pcap_if)), ("name", c_char_p), ("description", c_char_p), ("addresses", POINTER(pcap_addr)), ("flags", c_uint)]
+class pcap_pkthdr(Structure):
+    _fields_ = [("ts_sec", c_long), ("ts_usec", c_long), ("caplen", c_uint), ("len", c_uint)]
+class bpf_program(Structure):
+    _fields_ = [("bf_len", c_uint), ("bf_insns", c_void_p)]
+
+
+def log_msg(msg):
+    try:
+        with open("dps_debug.txt", "a") as f:
+            f.write(f"{time.strftime('%H:%M:%S')} - {msg}\n")
+    except: pass
 
 def is_admin():
     try: return ctypes.windll.shell32.IsUserAnAdmin()
@@ -123,10 +146,50 @@ class HealthBarOverlay(ResizableWindow):
     def on_resize(self):
         self.redraw()
 
+# --- IMPLEMENTACION CAST BAR (SEPARADA) ---
+class CastBarOverlay(ResizableWindow):
+    def __init__(self, parent, initial_x, initial_y):
+        super().__init__(parent, "CAST", initial_x, initial_y, 250, 30, "#000000")
+        self.bar_id = self.canvas.create_rectangle(0, 0, 0, 0, fill="#D32F2F", outline="") # Rojo Casteo
+        self.text_id = self.canvas.create_text(10, 10, text="", fill="white", font=FONT_OVERLAY)
+        self.progress = 0.0
+        self.duration = 2.0
+        self.is_casting = False
+        self._anim_job = None
+
+    def start_cast(self, name="CASTING!", duration=2.0):
+        self.duration = duration
+        self.progress = 0.0
+        self.is_casting = True
+        self.canvas.itemconfigure(self.text_id, text=name)
+        if self._anim_job: self.after_cancel(self._anim_job)
+        self.animate()
+
+    def animate(self):
+        if not self.is_casting: return
+        self.progress += 0.05 # 50ms step
+        pct = min(1.0, self.progress / self.duration)
+        
+        w = self.winfo_width()
+        h = self.winfo_height()
+        self.canvas.coords(self.bar_id, 0, 0, w * pct, h)
+        self.canvas.coords(self.text_id, w/2, h/2)
+        self.redraw_grip()
+        
+        if pct < 1.0:
+            self._anim_job = self.after(50, self.animate)
+        else:
+            self.is_casting = False
+            self.canvas.coords(self.bar_id, 0, 0, 0, 0) # Clear
+            self.canvas.itemconfigure(self.text_id, text="")
+
+    def on_resize(self):
+        if self.bar_id: self.redraw_grip()
+
 # --- IMPLEMENTACION DPS DETAILS ---
 class DpsOverlay(ResizableWindow):
-    def __init__(self, parent, initial_x, initial_y):
-        super().__init__(parent, "DPS", initial_x, initial_y, 250, 160, "#000000")
+    def __init__(self, parent, initial_x, initial_y, title="DPS"):
+        super().__init__(parent, title, initial_x, initial_y, 250, 160, "#000000")
         self.rows = [] 
 
     def update_list(self, sorted_data, names_map, start_times):
@@ -182,12 +245,20 @@ class DpsApp:
         self.setup_ui()
         
         # Overlays
+        # Overlays
         self.ov_hp = HealthBarOverlay(self.root, 300, 500, self.hp_color, self.hp_alpha)
-        self.ov_dps = DpsOverlay(self.root, 20, 200)
-        self.ov_dps.withdraw() 
+        self.ov_cast = CastBarOverlay(self.root, 300, 460) # New independent bar
         
+        # DPS Overlays
+        self.ov_dps = DpsOverlay(self.root, 20, 200, title="Player DMG detail")
+        self.ov_dps_m = DpsOverlay(self.root, 20, 380, title="Monster Detail DMG")
+        
+        self.ov_dps.withdraw()
+        self.ov_dps_m.withdraw()
+        self.ov_cast.withdraw()
+
         if is_admin():
-            threading.Thread(target=self.proxy_init, daemon=True).start()
+            self.root.after(100, self.ask_device_and_start)
         else:
             messagebox.showerror("Error", "Ejecuta como Administrador")
 
@@ -261,11 +332,14 @@ class DpsApp:
         self.chk_hp = tk.BooleanVar(value=True)
         tk.Checkbutton(f_ov, text="Ver Barra HP", variable=self.chk_hp, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(side="left", fill="x", expand=True)
         
-        # Boton Config Estilo (Paleta)
+        # Boton Config Estilo (Paleta) y Sniffer
         tk.Button(f_ov, text="🎨", command=self.ask_color_style, bg="#444", fg="white", bd=0, width=3).pack(side="right")
         
         self.chk_dps_mini = tk.BooleanVar(value=False)
-        tk.Checkbutton(btn_frame_p, text="Ver Mini DPS", variable=self.chk_dps_mini, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(fill="x")
+        tk.Checkbutton(btn_frame_p, text="Ver Mini DPS (Jugador)", variable=self.chk_dps_mini, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(fill="x")
+        
+        self.chk_dps_m = tk.BooleanVar(value=False)
+        tk.Checkbutton(btn_frame_p, text="Ver Mini DPS (Monstruo)", variable=self.chk_dps_m, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(fill="x")
         
         tk.Button(btn_frame_p, text="RESET ID", command=self.reset_id, bg="#550000", fg="white", bd=0).pack(fill="x", pady=5)
         
@@ -292,6 +366,31 @@ class DpsApp:
         self.lbl_status.pack(side="bottom", fill="x")
         
         self.root.after(1000, self.update_dps_loop)
+        
+        self.win_sniffer = None
+
+    def toggle_sniffer(self):
+        if self.win_sniffer and self.win_sniffer.winfo_exists():
+            self.win_sniffer.destroy()
+            self.win_sniffer = None
+            return
+
+        self.win_sniffer = tk.Toplevel(self.root)
+        self.win_sniffer.title("Packet Sniffer - DEBUG")
+        self.win_sniffer.geometry("600x400")
+        self.win_sniffer.configure(bg="black")
+        
+        tk.Label(self.win_sniffer, text="Capturando paquetes desconocidos... (Usa esto para ver Casts)", bg="black", fg="#0f0").pack(fill="x")
+        
+        frame = tk.Frame(self.win_sniffer, bg="black")
+        frame.pack(fill="both", expand=True)
+        
+        self.txt_log = tk.Text(frame, bg="#111", fg="#0f0", font=FONT_MONO)
+        self.txt_log.pack(side="left", fill="both", expand=True)
+        
+        sb = tk.Scrollbar(frame, command=self.txt_log.yview)
+        sb.pack(side="right", fill="y")
+        self.txt_log.config(yscrollcommand=sb.set)
 
     def toggle_pause(self):
         self.is_paused = not self.is_paused
@@ -303,6 +402,9 @@ class DpsApp:
         
         if self.chk_dps_mini.get(): self.ov_dps.deiconify()
         else: self.ov_dps.withdraw()
+        
+        if self.chk_dps_m.get(): self.ov_dps_m.deiconify()
+        else: self.ov_dps_m.withdraw()
 
     def reset_p(self):
         self.player_hits.clear()
@@ -356,55 +458,53 @@ class DpsApp:
         
         if self.chk_dps_mini.get():
             self.ov_dps.update_list(sorted_p, self.names_map, self.start_times)
+            
+        if self.chk_dps_m.get():
+            sorted_m = sorted(self.monster_hits.items(), key=lambda x:x[1], reverse=True)
+            self.ov_dps_m.update_list(sorted_m, self.names_map, self.start_times)
+            
         self.root.after(1000, self.update_dps_loop)
 
-    def proxy_init(self):
-        self.lbl_status.config(text="Status: Conectando...")
-        real_ip = self.find_ip()
-        if not real_ip: return
-        try:
-            self.set_hosts(True)
-            srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            srv.bind(('127.0.0.1', REAL_PORT))
-            srv.listen(5)
-            self.lbl_status.config(text="Status: LISTO - Entra al juego")
-            while True:
-                c, _ = srv.accept()
-                r = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                try:
-                    r.connect((real_ip, REAL_PORT))
-                    threading.Thread(target=self.pipe, args=(c,r,True)).start()
-                    threading.Thread(target=self.pipe, args=(r,c,False)).start()
-                except: c.close()
-        except: pass
-        finally: self.set_hosts(False)
 
-    def pipe(self, s, d, to_srv):
-        buf = b""
-        while True:
-            try:
-                data = s.recv(8192)
-                if not data: break
-                if not to_srv:
-                    buf += data
-                    while len(buf) >= 4:
-                        try:
-                            sz = struct.unpack('<I', buf[:4])[0]
-                            if sz > 16000 or sz == 0: buf=buf[1:]; continue
-                            if len(buf) >= sz+4: self.parse(buf[4:sz+4]); buf=buf[sz+4:]
-                            else: break
-                        except: buf=buf[1:]
-                d.sendall(data)
-            except: break
 
     def parse(self, pl):
         op = pl[0:2].hex()
+        
+        # LOGGING PARA SNIFFER (Solo si la ventana está abierta)
+        if self.win_sniffer and self.win_sniffer.winfo_exists():
+            if len(pl) > 2 and op != "8d00": # Ignorar Spam 8d00
+                try:
+                    raw_hex = pl.hex(" ")
+                    tag = ""
+                    if op == "6c00": tag = "[DMG]"
+                    if op == "6a00": tag = "[HP]"
+                    if op == "8800": tag = "[CAST]"
+                    msg = f"{tag} [Op: {op}] {raw_hex}"
+                    self.txt_log.insert(tk.END, msg + "\n")
+                    self.txt_log.see(tk.END)
+                except: pass
+
+        # Helpers ID
+        def is_player(nid):
+            # STRICT 6 DIGITS ONLY (As requested by User)
+            # Rango: 100,000 a 999,999
+            return (100000 <= nid <= 999999)
+
+        # [HP / STATS UPDATE]
         if op == "6a00" and len(pl) >= 11:
             try:
                 eid = struct.unpack('<I', pl[2:6])[0]
                 tp = pl[6]
                 val = struct.unpack('<i', pl[7:11])[0]
+                
+                # Auto-Detect ID from Stats (More reliable than combat)
+                if self.my_id is None:
+                    # Assign ID if it looks like a valid HP update (Strict 6 digits)
+                    if tp in [1, 16] and (100000 <= eid <= 999999) and (0 < val < 1000000): 
+                         self.my_id = eid
+                         log_msg(f"ID AUTO-DETECT (HP Packet): {eid}")
+                         self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="SINCRO OK")
+
                 if self.my_id and eid == self.my_id:
                     if tp == 1: 
                         self.player_hp_current = val
@@ -415,51 +515,219 @@ class DpsApp:
                         self.ov_hp.update_data(self.player_hp_current, val, False)
             except: pass
             
+        # [DAMAGE PACKET]
         elif op == "6c00" and len(pl) >= 15:
             if self.is_paused: return
             try:
                 atk = struct.unpack('<I', pl[2:6])[0]
                 vic = struct.unpack('<I', pl[6:10])[0]
                 val = abs(struct.unpack('<i', pl[11:15])[0])
-                if self.my_id is None and atk < 1000000 and vic > 1000000:
-                    self.my_id = atk
-                    self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="SINCRO OK")
+                
+                # Debug Log for IDs
+                if self.win_sniffer and self.win_sniffer.winfo_exists():
+                     log_msg(f"[DMG] Atk:{atk} Vic:{vic} Dmg:{val}")
+
+                # Auto-Detect ID from Combat (Fallback)
+                if self.my_id is None:
+                    if is_player(atk) and not is_player(vic):
+                        self.my_id = atk
+                        log_msg(f"ID AUTO-DETECT (Dmg Packet): {atk}")
+                        self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="SINCRO OK")
+
                 if val > 0:
-                    if atk < 1000000:
+                    if is_player(atk):
                         self.player_hits[atk] += val
                         if atk not in self.start_times: self.start_times[atk] = time.time()
                     else:
                         self.monster_hits[atk] += val 
-            except: pass
+            except Exception as e: log_msg(f"Error Parse 6c00: {e}")
 
-    def find_ip(self):
-        self.set_hosts(False); time.sleep(0.5)
-        l = ["185.43.108.17", "64.176.6.148"]
-        try: 
-            hh = socket.gethostbyname(REAL_HOSTNAME)
-            if "127." not in hh: l.insert(0, hh)
-        except: pass
-        for ip in l:
-            try: 
-                s=socket.socket(); s.settimeout(1)
-                if s.connect_ex((ip, REAL_PORT))==0: s.close(); return ip
+        # MONSTER CAST DETECTION
+        elif op == "8800" and len(pl) >= 6:
+            try:
+                actor = struct.unpack('<I', pl[2:6])[0]
+                # Si alguien castea y NO soy yo, y NO es un jugador (presumiblemente)
+                if self.my_id and actor != self.my_id and not is_player(actor):
+                    self.trigger_cast_alert(actor)
             except: pass
-        return None
+            
 
-    def set_hosts(self, e):
+
+    def trigger_cast_alert(self, actor_id):
+        nm = self.names_map.get(str(actor_id), "MONSTER")
+        if nm.startswith(".."): nm = "MONSTER"
+        
+        # Alerta Visual en Label de Monstruos
+        # orig_bg = self.list_m.cget("bg")
+        # self.list_m.config(bg="#aa0000") # Flash Rojo NO MORE
+        # self.root.after(500, lambda: self.list_m.config(bg=orig_bg))
+        
+        # Alerta en Overlay Independiente
+        if self.chk_cast.get():
+            self.ov_cast.start_cast(f"{nm} CASTING!", duration=2.0)
+
+    # --- PCAP ENGINE (THREAD-SAFE UI) ---
+    def ask_device_and_start(self):
+        log_msg("DEBUG: ask_device_and_start initiated")
+        # 1. Cargar wpcap
         try:
-            if os.path.exists(HOSTS_PATH): os.chmod(HOSTS_PATH, 0o777)
-            if not os.path.exists(HOSTS_PATH): open(HOSTS_PATH,'w').close()
-            with open(HOSTS_PATH,'r') as f: ll = f.readlines()
-            o = [l for l in ll if REAL_HOSTNAME not in l]
-            if e: o.append(f"\n127.0.0.1 {REAL_HOSTNAME}\n")
-            with open(HOSTS_PATH,'w') as f: f.writelines(o)
-            os.system("ipconfig /flushdns")
-            return True
-        except: return False
+            self.wpcap = CDLL("wpcap.dll")
+        except Exception as e:
+            messagebox.showerror("Error", f"Falta wpcap.dll: {e}")
+            log_msg(f"DEBUG: Failed to load wpcap.dll: {e}")
+            return
+
+        # 2. Listar
+        errbuf = create_string_buffer(256)
+        alldevs = POINTER(pcap_if)()
+        self.wpcap.pcap_findalldevs.argtypes = [POINTER(POINTER(pcap_if)), c_char_p]
+        
+        if self.wpcap.pcap_findalldevs(byref(alldevs), errbuf) == -1:
+            log_msg(f"DEBUG: Error findalldevs: {errbuf.value}")
+            return
+
+        self.pcap_devices = []
+        dev = alldevs
+        while dev:
+            d = dev.contents
+            desc = d.description.decode('utf-8', 'ignore') if d.description else "Sin Descripción"
+            name = d.name.decode('utf-8', 'ignore') if d.name else "?"
+            self.pcap_devices.append((name, desc))
+            dev = d.next
+        self.wpcap.pcap_freealldevs(alldevs)
+        
+        log_msg(f"DEBUG: Found {len(self.pcap_devices)} devices")
+
+        if not self.pcap_devices:
+            messagebox.showerror("Error", "No Network Devices found.")
+            return
+
+        # 3. Ventana Selección (MAIN THREAD)
+        if self.win_sniffer: self.win_sniffer.destroy() # Close old debug if open
+        
+        self.win_sel = tk.Toplevel(self.root)
+        self.win_sel.title("Elige tu Tarjeta de Red")
+        self.win_sel.geometry("500x400")
+        
+        tk.Label(self.win_sel, text="Selecciona tu conexión de Internet:", font=("Segoe UI", 10, "bold")).pack(pady=10)
+        
+        frame_list = tk.Frame(self.win_sel)
+        frame_list.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        sb = tk.Scrollbar(frame_list)
+        sb.pack(side="right", fill="y")
+        
+        lbox = tk.Listbox(frame_list, width=60, height=10, yscrollcommand=sb.set, font=("Consolas", 10))
+        lbox.pack(side="left", fill="both", expand=True)
+        sb.config(command=lbox.yview)
+        
+        for _, desc in self.pcap_devices:
+            lbox.insert(tk.END, desc)
+            
+        def confirm():
+            sel = lbox.curselection()
+            if sel:
+                dname = self.pcap_devices[sel[0]][0]
+                desc = self.pcap_devices[sel[0]][1]
+                log_msg(f"DEBUG: User selected: {desc} ({dname})")
+                self.win_sel.destroy()
+                # START THREAD
+                threading.Thread(target=self.sniffer_loop, args=(dname,), daemon=True).start()
+            else:
+                log_msg("DEBUG: Confirm clicked but no selection")
+        
+        lbox.bind('<Double-Button-1>', lambda e: confirm())
+        tk.Button(self.win_sel, text="INICIAR CAPTURA", command=confirm, bg=COLOR_PLAYER_DEFAULT, fg="white", font=("Segoe UI", 11, "bold")).pack(pady=15, ipadx=20)
+
+    def sniffer_loop(self, dev_name):
+        log_msg(f"DEBUG: Starting sniffer loop on {dev_name}")
+        errbuf = create_string_buffer(256)
+        
+        # Define types for pcap_open_live BEFORE calling it
+        self.wpcap.pcap_open_live.restype = c_void_p
+        self.wpcap.pcap_open_live.argtypes = [c_char_p, c_int, c_int, c_int, c_char_p]
+
+        # Open
+        handle = self.wpcap.pcap_open_live(dev_name.encode("utf-8"), 65536, 1, 1000, errbuf)
+        
+        if not handle:
+            log_msg(f"DEBUG: Error pcap_open_live: {errbuf.value}")
+            return
+            
+        # Filter REMOVED for Debugging
+        # fp = bpf_program()
+        # filter_exp = b"tcp port 16383"
+        
+        self.lbl_status.config(text="Status: SNIFFER ACTIVO (Espiando...)")
+        log_msg("DEBUG: Sniffer started successfully. Listening...")
+        
+        header = POINTER(pcap_pkthdr)()
+        pkt_data = POINTER(c_ubyte)()
+        self.wpcap.pcap_next_ex.argtypes = [c_void_p, POINTER(POINTER(pcap_pkthdr)), POINTER(POINTER(c_ubyte))]
+        self.wpcap.pcap_next_ex.restype = c_int
+
+        last_log = 0
+        
+        while True:
+            res = self.wpcap.pcap_next_ex(handle, byref(header), byref(pkt_data))
+            if res == 1:
+                try:
+                    data_ptr = cast(pkt_data, POINTER(c_ubyte * header.contents.caplen)).contents
+                    raw = bytes(data_ptr)
+                    
+                    if len(raw) < 34: continue
+                    ip_header = raw[14:]
+                    ver_ihl = ip_header[0]
+                    ihl = (ver_ihl & 0xF) * 4
+                    protocol = ip_header[9]
+                    
+                    if protocol == 6: # TCP
+                        src_ip = socket.inet_ntoa(ip_header[12:16])
+                        tcp_packet = ip_header[ihl:]
+                        src_port = struct.unpack('!H', tcp_packet[0:2])[0]
+                        dst_port = struct.unpack('!H', tcp_packet[2:4])[0]
+                        
+                        # DEBUG VISUAL
+                        if self.win_sniffer and self.win_sniffer.winfo_exists():
+                            ct = time.time()
+                            if src_port == 16383 or (ct - last_log > 0.05):
+                                last_log = ct
+                                tag = "[GAME]" if src_port == 16383 else "[TCP]"
+                                msg = f"{tag} {src_ip}:{src_port} -> :{dst_port}\n"
+                                try:
+                                    self.txt_log.insert(tk.END, msg)
+                                    self.txt_log.see(tk.END)
+                                except: pass
+
+                        # LOGIC
+                        if src_port == 16383:
+                            off = (tcp_packet[12] >> 4) * 4
+                            payload = tcp_packet[off:]
+                            if payload: self.extract_chunks(payload)
+                except: pass
+
+    def process_packet(self, raw): pass
+
+    def extract_chunks(self, buf):
+        while len(buf) >= 4:
+            try:
+                sz = struct.unpack('<I', buf[:4])[0]
+                if sz > 16000 or sz == 0: 
+                    buf = buf[1:]
+                    continue
+                
+                if len(buf) >= sz + 4:
+                    packet_data = buf[4:sz+4]
+                    self.parse(packet_data)
+                    buf = buf[sz+4:]
+                else:
+                    break
+            except: 
+                buf = buf[1:]
+                break
 
 if __name__ == "__main__":
     r = tk.Tk()
     a = DpsApp(r)
-    r.protocol("WM_DELETE_WINDOW", lambda: (a.set_hosts(False), r.destroy(), os._exit(0)))
+    r.protocol("WM_DELETE_WINDOW", lambda: (r.destroy(), os._exit(0)))
     r.mainloop()
