@@ -488,7 +488,7 @@ class DpsApp:
         def is_player(nid):
             # STRICT 6 DIGITS ONLY (As requested by User)
             # Rango: 100,000 a 999,999
-            return (100000 <= nid <= 999999)
+            return (1 <= nid <= 999999)
 
         # [HP / STATS UPDATE]
         if op == "6a00" and len(pl) >= 11:
