@@ -21,6 +21,82 @@ FONT_TITLE = ("Segoe UI", 9, "bold")
 FONT_MONO = ("Consolas", 9)
 FONT_OVERLAY = ("Segoe UI", 9, "bold")
 
+# --- TRANSLATIONS ---
+TRANSLATIONS = {
+    "ESP": {
+        "PLAYER_DAMAGE": "DAÑO JUGADOR",
+        "RESET_PLAYERS": "RESETEAR JUGADORES",
+        "PAUSE": "PAUSAR",
+        "RESUME": "REANUDAR",
+        "SHOW_HP": "Ver Barra HP",
+        "SHOW_MINI_P": "Ver Mini DPS (Jugador)",
+        "SHOW_MINI_M": "Ver Mini DPS (Monstruo)",
+        "RESET_ID": "RESETEAR ID",
+        "MONSTER_DAMAGE": "DAÑO MONSTRUO",
+        "RESET_MONSTERS": "RESETEAR MONSTRUOS",
+        "STATUS_READY": "Estado: Listo",
+        "STATUS_ACTIVE": "Estado: SNIFFER ACTIVO (Espiando...)",
+        "DEBUG_MSG": "Capturando paquetes desconocidos...",
+        "COL_NAME": "NOMBRE/ID",
+        "COL_DMG": "DAÑO",
+        "COL_DPS": "DPS",
+        "SYNC_OK": "SINCRO OK",
+        "HIT_TO_LOCK": "GOLPEA PARA BLOQUEAR...",
+        "CHOOSE_NET": "Elige tu Tarjeta de Red",
+        "START_CAP": "INICIAR CAPTURA",
+        "SELECT_CONN": "Selecciona tu conexión de Internet:",
+        "ASK_ADMIN": "Ejecuta como Administrador",
+        "NO_DEVICES": "No se encontraron dispositivos de red",
+        "WIN_TITLE_SEL": "Elige tu Tarjeta de Red",
+        "BTN_LANG": "IDIOMA/LANG",
+        "RENAME": "Renombrar",
+        "NEW_NAME": "Nuevo Nombre:",
+        "ASK_COLOR": "Elige color de Barra HP",
+        "ASK_ALPHA": "Transparencia",
+        "ASK_ALPHA_MSG": "Nivel de transparencia (0.1 a 1.0):",
+        "OV_TITLE_PLAYER": "Detalle Daño Jugador",
+        "OV_TITLE_MONSTER": "Detalle Daño Monstruo",
+        "DEBUG_TITLE": "Packet Sniffer - DEBUG",
+        "DEBUG_INFO": "Capturando paquetes desconocidos... (Usa esto para ver Casts)"
+    },
+    "ENG": {
+        "PLAYER_DAMAGE": "PLAYER DAMAGE",
+        "RESET_PLAYERS": "RESET PLAYERS",
+        "PAUSE": "PAUSE",
+        "RESUME": "RESUME",
+        "SHOW_HP": "Show HP Bar",
+        "SHOW_MINI_P": "Show Mini DPS (Player)",
+        "SHOW_MINI_M": "Show Mini DPS (Monster)",
+        "RESET_ID": "RESET ID",
+        "MONSTER_DAMAGE": "MONSTER DAMAGE",
+        "RESET_MONSTERS": "RESET MONSTERS",
+        "STATUS_READY": "Status: Ready",
+        "STATUS_ACTIVE": "Status: SNIFFER ACTIVE (Spying...)",
+        "DEBUG_MSG": "Capturing unknown packets...",
+        "COL_NAME": "NAME/ID",
+        "COL_DMG": "DAMAGE",
+        "COL_DPS": "DPS",
+        "SYNC_OK": "SYNC OK",
+        "HIT_TO_LOCK": "HIT TO LOCK...",
+        "CHOOSE_NET": "Choose Network Card",
+        "START_CAP": "START CAPTURE",
+        "SELECT_CONN": "Select your Internet connection:",
+        "ASK_ADMIN": "Run as Administrator",
+        "NO_DEVICES": "No Network Devices found",
+        "WIN_TITLE_SEL": "Choose Network Card",
+        "BTN_LANG": "LANG/IDIOMA",
+        "RENAME": "Rename",
+        "NEW_NAME": "New Name:",
+        "ASK_COLOR": "Choose HP Bar Color",
+        "ASK_ALPHA": "Transparency",
+        "ASK_ALPHA_MSG": "Transparency Level (0.1 to 1.0):",
+        "OV_TITLE_PLAYER": "Player DMG Detail",
+        "OV_TITLE_MONSTER": "Monster DMG Detail",
+        "DEBUG_TITLE": "Packet Sniffer - DEBUG",
+        "DEBUG_INFO": "Capturing unknown packets... (Use to see Casts)"
+    }
+}
+
 # --- CTYPES STRUCTURES FOR NPCAP ---
 from ctypes import *
 class sockaddr(Structure):
@@ -242,6 +318,11 @@ class DpsApp:
         self.player_hp_current = 0
         self.player_hp_max = 1 
         
+        
+        self.player_hp_max = 1 
+        
+        self.lang = self.settings.get("lang", "ESP") # Load Lang from Settings
+        
         self.setup_ui()
         
         # Overlays
@@ -250,8 +331,8 @@ class DpsApp:
         self.ov_cast = CastBarOverlay(self.root, 300, 460) # New independent bar
         
         # DPS Overlays
-        self.ov_dps = DpsOverlay(self.root, 20, 200, title="Player DMG detail")
-        self.ov_dps_m = DpsOverlay(self.root, 20, 380, title="Monster Detail DMG")
+        self.ov_dps = DpsOverlay(self.root, 20, 200, title=self.tr("OV_TITLE_PLAYER"))
+        self.ov_dps_m = DpsOverlay(self.root, 20, 380, title=self.tr("OV_TITLE_MONSTER"))
         
         self.ov_dps.withdraw()
         self.ov_dps_m.withdraw()
@@ -260,7 +341,53 @@ class DpsApp:
         if is_admin():
             self.root.after(100, self.ask_device_and_start)
         else:
-            messagebox.showerror("Error", "Ejecuta como Administrador")
+            messagebox.showerror("Error", self.tr("ASK_ADMIN"))
+            
+        self.refresh_ui_text()
+
+    def tr(self, key):
+        return TRANSLATIONS.get(self.lang, TRANSLATIONS["ESP"]).get(key, key)
+
+    def set_lang(self, target):
+        self.lang = target
+        self.save_settings() # Save immediately
+        self.refresh_ui_text()
+
+    def refresh_ui_text(self):
+        # Update Colors
+        if self.lang == "ESP":
+            self.lbl_esp.config(fg="#4CAF50")
+            self.lbl_eng.config(fg="#555555")
+        else:
+            self.lbl_esp.config(fg="#555555")
+            self.lbl_eng.config(fg="#4CAF50")
+
+        self.lbl_p.config(text=self.tr("PLAYER_DAMAGE"))
+        self.btn_reset_p.config(text=self.tr("RESET_PLAYERS"))
+        self.btn_pause.config(text=self.tr("RESUME") if self.is_paused else self.tr("PAUSE"))
+        
+        self.chk_hp_w.config(text=self.tr("SHOW_HP"))
+        self.chk_dps_mini_w.config(text=self.tr("SHOW_MINI_P"))
+        self.chk_dps_m_w.config(text=self.tr("SHOW_MINI_M"))
+        
+        self.btn_reset_id.config(text=self.tr("RESET_ID"))
+        self.lbl_m.config(text=self.tr("MONSTER_DAMAGE"))
+        self.btn_reset_m.config(text=self.tr("RESET_MONSTERS"))
+        
+        if "SNIFFER" in self.lbl_status.cget("text"):
+             self.lbl_status.config(text=self.tr("STATUS_ACTIVE"))
+        else:
+             self.lbl_status.config(text=self.tr("STATUS_READY"))
+             
+        if not self.my_id:
+             self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text=self.tr("HIT_TO_LOCK"))
+
+        self.ov_dps.title(self.tr("OV_TITLE_PLAYER"))
+        self.ov_dps_m.title(self.tr("OV_TITLE_MONSTER"))
+        
+        if self.win_sniffer and self.win_sniffer.winfo_exists():
+            self.win_sniffer.title(self.tr("DEBUG_TITLE"))
+            self.lbl_sniffer_info.config(text=self.tr("DEBUG_INFO"))
 
     def load_names(self):
         try:
@@ -280,16 +407,20 @@ class DpsApp:
     def save_settings(self):
         try:
             with open(SETTINGS_FILE, 'w') as f: 
-                json.dump({"hp_color": self.hp_color, "hp_alpha": self.hp_alpha}, f)
+                json.dump({
+                    "hp_color": self.hp_color, 
+                    "hp_alpha": self.hp_alpha,
+                    "lang": self.lang
+                }, f)
         except: pass
 
     def ask_color_style(self):
         # 1. Color
-        col = colorchooser.askcolor(title="Elige color de Barra HP", initialcolor=self.hp_color)
+        col = colorchooser.askcolor(title=self.tr("ASK_COLOR"), initialcolor=self.hp_color)
         if not col[1]: return # Cancelado
         
         # 2. Alpha (Simple Dialog)
-        alpha = simpledialog.askfloat("Transparencia", "Nivel de transparencia (0.1 a 1.0):", 
+        alpha = simpledialog.askfloat(self.tr("ASK_ALPHA"), self.tr("ASK_ALPHA_MSG"), 
                                       minvalue=0.1, maxvalue=1.0, initialvalue=self.hp_alpha)
         if alpha is not None:
             self.hp_color = col[1]
@@ -301,8 +432,26 @@ class DpsApp:
         main = tk.Frame(self.root, bg=COLOR_BG)
         main.pack(fill="both", expand=True, padx=10, pady=10)
         
-        lbl_p = tk.Label(main, text="PLAYER DAMAGE", bg=COLOR_BG, fg=COLOR_PLAYER_DEFAULT, font=FONT_TITLE, anchor="w")
-        lbl_p.pack(fill="x")
+        # Header for Player Damage + Language Switch
+        header_p = tk.Frame(main, bg=COLOR_BG)
+        header_p.pack(fill="x")
+        
+        self.lbl_p = tk.Label(header_p, text=self.tr("PLAYER_DAMAGE"), bg=COLOR_BG, fg=COLOR_PLAYER_DEFAULT, font=FONT_TITLE, anchor="w")
+        self.lbl_p.pack(side="left", fill="x", expand=True)
+        
+        # New Lang Switcher (ESP | EN)
+        f_lang = tk.Frame(header_p, bg=COLOR_BG)
+        f_lang.pack(side="right")
+        
+        self.lbl_esp = tk.Label(f_lang, text="ESP", font=("Segoe UI", 9, "bold"), bg=COLOR_BG, fg="#4CAF50", cursor="hand2")
+        self.lbl_esp.pack(side="left")
+        self.lbl_esp.bind("<Button-1>", lambda e: self.set_lang("ESP"))
+        
+        tk.Label(f_lang, text="|", font=("Segoe UI", 9), bg=COLOR_BG, fg="#555").pack(side="left", padx=5)
+        
+        self.lbl_eng = tk.Label(f_lang, text="EN", font=("Segoe UI", 9, "bold"), bg=COLOR_BG, fg="#555", cursor="hand2")
+        self.lbl_eng.pack(side="left")
+        self.lbl_eng.bind("<Button-1>", lambda e: self.set_lang("ENG"))
         
         frame_p = tk.Frame(main, bg=COLOR_BG)
         frame_p.pack(fill="both", expand=True, pady=(0, 10))
@@ -319,8 +468,10 @@ class DpsApp:
         btn_frame_p.pack(side="right", fill="y", padx=(10, 0))
         btn_frame_p.pack_propagate(False)
         
-        tk.Button(btn_frame_p, text="RESET PLAYERS", command=self.reset_p, bg="#2E7D32", fg="white", font=FONT_TITLE, bd=0).pack(fill="x", pady=2, ipady=5)
-        self.btn_pause = tk.Button(btn_frame_p, text="PAUSE", command=self.toggle_pause, bg="#FBC02D", fg="black", font=FONT_TITLE, bd=0)
+        self.btn_reset_p = tk.Button(btn_frame_p, text=self.tr("RESET_PLAYERS"), command=self.reset_p, bg="#2E7D32", fg="white", font=FONT_TITLE, bd=0)
+        self.btn_reset_p.pack(fill="x", pady=2, ipady=5)
+        
+        self.btn_pause = tk.Button(btn_frame_p, text=self.tr("PAUSE"), command=self.toggle_pause, bg="#FBC02D", fg="black", font=FONT_TITLE, bd=0)
         self.btn_pause.pack(fill="x", pady=2, ipady=5)
         
         tk.Frame(btn_frame_p, bg=COLOR_BG, height=20).pack()
@@ -330,21 +481,27 @@ class DpsApp:
         f_ov.pack(fill="x")
         
         self.chk_hp = tk.BooleanVar(value=True)
-        tk.Checkbutton(f_ov, text="Ver Barra HP", variable=self.chk_hp, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(side="left", fill="x", expand=True)
+        self.chk_hp_w = tk.Checkbutton(f_ov, text=self.tr("SHOW_HP"), variable=self.chk_hp, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w")
+        self.chk_hp_w.pack(side="left", fill="x", expand=True)
         
-        # Boton Config Estilo (Paleta) y Sniffer
-        tk.Button(f_ov, text="🎨", command=self.ask_color_style, bg="#444", fg="white", bd=0, width=3).pack(side="right")
+        # Boton Config Estilo (Paleta) - Removed Globe, kept Paint
+        f_mini_btns = tk.Frame(f_ov, bg=COLOR_BG)
+        f_mini_btns.pack(side="right")
+        tk.Button(f_mini_btns, text="🎨", command=self.ask_color_style, bg="#444", fg="white", bd=0, width=3).pack(side="right")
         
         self.chk_dps_mini = tk.BooleanVar(value=False)
-        tk.Checkbutton(btn_frame_p, text="Ver Mini DPS (Jugador)", variable=self.chk_dps_mini, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(fill="x")
+        self.chk_dps_mini_w = tk.Checkbutton(btn_frame_p, text=self.tr("SHOW_MINI_P"), variable=self.chk_dps_mini, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w")
+        self.chk_dps_mini_w.pack(fill="x")
         
         self.chk_dps_m = tk.BooleanVar(value=False)
-        tk.Checkbutton(btn_frame_p, text="Ver Mini DPS (Monstruo)", variable=self.chk_dps_m, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w").pack(fill="x")
+        self.chk_dps_m_w = tk.Checkbutton(btn_frame_p, text=self.tr("SHOW_MINI_M"), variable=self.chk_dps_m, command=self.toggle_overlays, bg=COLOR_BG, fg="white", selectcolor="#333", anchor="w")
+        self.chk_dps_m_w.pack(fill="x")
         
-        tk.Button(btn_frame_p, text="RESET ID", command=self.reset_id, bg="#550000", fg="white", bd=0).pack(fill="x", pady=5)
+        self.btn_reset_id = tk.Button(btn_frame_p, text=self.tr("RESET_ID"), command=self.reset_id, bg="#550000", fg="white", bd=0)
+        self.btn_reset_id.pack(fill="x", pady=5)
         
-        lbl_m = tk.Label(main, text="MONSTER DAMAGE", bg=COLOR_BG, fg=COLOR_MONSTER, font=FONT_TITLE, anchor="w")
-        lbl_m.pack(fill="x")
+        self.lbl_m = tk.Label(main, text=self.tr("MONSTER_DAMAGE"), bg=COLOR_BG, fg=COLOR_MONSTER, font=FONT_TITLE, anchor="w")
+        self.lbl_m.pack(fill="x")
         
         frame_m = tk.Frame(main, bg=COLOR_BG)
         frame_m.pack(fill="both", expand=True)
@@ -360,10 +517,13 @@ class DpsApp:
         btn_frame_m = tk.Frame(frame_m, bg=COLOR_BG, width=150)
         btn_frame_m.pack(side="right", fill="y", padx=(10, 0))
         btn_frame_m.pack_propagate(False)
-        tk.Button(btn_frame_m, text="RESET MONSTERS", command=self.reset_m, bg="#C62828", fg="white", font=FONT_TITLE, bd=0).pack(fill="x", pady=2, ipady=5)
+        self.btn_reset_m = tk.Button(btn_frame_m, text=self.tr("RESET_MONSTERS"), command=self.reset_m, bg="#C62828", fg="white", font=FONT_TITLE, bd=0)
+        self.btn_reset_m.pack(fill="x", pady=2, ipady=5)
 
-        self.lbl_status = tk.Label(self.root, text="Status: Ready", bg="black", fg="#4CAF50", anchor="w")
+        self.lbl_status = tk.Label(self.root, text=self.tr("STATUS_READY"), bg="black", fg="#4CAF50", anchor="w")
         self.lbl_status.pack(side="bottom", fill="x")
+        
+
         
         self.root.after(1000, self.update_dps_loop)
         
@@ -376,11 +536,12 @@ class DpsApp:
             return
 
         self.win_sniffer = tk.Toplevel(self.root)
-        self.win_sniffer.title("Packet Sniffer - DEBUG")
+        self.win_sniffer.title(self.tr("DEBUG_TITLE"))
         self.win_sniffer.geometry("600x400")
         self.win_sniffer.configure(bg="black")
         
-        tk.Label(self.win_sniffer, text="Capturando paquetes desconocidos... (Usa esto para ver Casts)", bg="black", fg="#0f0").pack(fill="x")
+        self.lbl_sniffer_info = tk.Label(self.win_sniffer, text=self.tr("DEBUG_INFO"), bg="black", fg="#0f0")
+        self.lbl_sniffer_info.pack(fill="x")
         
         frame = tk.Frame(self.win_sniffer, bg="black")
         frame.pack(fill="both", expand=True)
@@ -394,7 +555,7 @@ class DpsApp:
 
     def toggle_pause(self):
         self.is_paused = not self.is_paused
-        self.btn_pause.config(text="RESUME" if self.is_paused else "PAUSE")
+        self.btn_pause.config(text=self.tr("RESUME") if self.is_paused else self.tr("PAUSE"))
 
     def toggle_overlays(self):
         if self.chk_hp.get(): self.ov_hp.deiconify()
@@ -416,7 +577,7 @@ class DpsApp:
 
     def reset_id(self):
         self.my_id = None
-        self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="GOLPEA PARA BLOQUEAR...")
+        self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text=self.tr("HIT_TO_LOCK"))
 
     def rename_entry(self, listbox, is_player):
         sel = listbox.curselection()
@@ -435,14 +596,15 @@ class DpsApp:
                 if self.names_map.get(str(k), f"..{str(k)[-4:]}") == name_display: tid = k; break
         
         if tid:
-            new = simpledialog.askstring("Rename", "New Name:", parent=self.root)
+            new = simpledialog.askstring(self.tr("RENAME"), self.tr("NEW_NAME"), parent=self.root)
             if new:
                 self.names_map[str(tid)] = new
                 self.save_names()
 
     def update_dps_loop(self):
         py, my = self.list_p.yview(), self.list_m.yview()
-        h = f"{'NOMBRE/ID':<20} | {'DAÑO':<10} | {'DPS':<10}"
+        # h = f"{'NOMBRE/ID':<20} | {'DAÑO':<10} | {'DPS':<10}"
+        h = f"{self.tr('COL_NAME'):<20} | {self.tr('COL_DMG'):<10} | {self.tr('COL_DPS'):<10}"
         self.list_p.delete(0, tk.END); self.list_p.insert(tk.END, h); self.list_p.insert(tk.END,"-"*50)
         sorted_p = sorted(self.player_hits.items(), key=lambda x:x[1], reverse=True)
         for eid, dmg in sorted_p:
@@ -503,7 +665,7 @@ class DpsApp:
                     if tp in [1, 16] and (100000 <= eid <= 999999) and (0 < val < 1000000): 
                          self.my_id = eid
                          log_msg(f"ID AUTO-DETECT (HP Packet): {eid}")
-                         self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="SINCRO OK")
+                         self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text=self.tr("SYNC_OK"))
 
                 if self.my_id and eid == self.my_id:
                     if tp == 1: 
@@ -532,7 +694,7 @@ class DpsApp:
                     if is_player(atk) and not is_player(vic):
                         self.my_id = atk
                         log_msg(f"ID AUTO-DETECT (Dmg Packet): {atk}")
-                        self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text="SINCRO OK")
+                        self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text=self.tr("SYNC_OK"))
 
                 if val > 0:
                     if is_player(atk):
@@ -599,17 +761,17 @@ class DpsApp:
         log_msg(f"DEBUG: Found {len(self.pcap_devices)} devices")
 
         if not self.pcap_devices:
-            messagebox.showerror("Error", "No Network Devices found.")
+            messagebox.showerror("Error", self.tr("NO_DEVICES"))
             return
 
         # 3. Ventana Selección (MAIN THREAD)
         if self.win_sniffer: self.win_sniffer.destroy() # Close old debug if open
         
         self.win_sel = tk.Toplevel(self.root)
-        self.win_sel.title("Elige tu Tarjeta de Red")
+        self.win_sel.title(self.tr("WIN_TITLE_SEL"))
         self.win_sel.geometry("500x400")
         
-        tk.Label(self.win_sel, text="Selecciona tu conexión de Internet:", font=("Segoe UI", 10, "bold")).pack(pady=10)
+        tk.Label(self.win_sel, text=self.tr("SELECT_CONN"), font=("Segoe UI", 10, "bold")).pack(pady=10)
         
         frame_list = tk.Frame(self.win_sel)
         frame_list.pack(fill="both", expand=True, padx=10, pady=5)
@@ -637,7 +799,7 @@ class DpsApp:
                 log_msg("DEBUG: Confirm clicked but no selection")
         
         lbox.bind('<Double-Button-1>', lambda e: confirm())
-        tk.Button(self.win_sel, text="INICIAR CAPTURA", command=confirm, bg=COLOR_PLAYER_DEFAULT, fg="white", font=("Segoe UI", 11, "bold")).pack(pady=15, ipadx=20)
+        tk.Button(self.win_sel, text=self.tr("START_CAP"), command=confirm, bg=COLOR_PLAYER_DEFAULT, fg="white", font=("Segoe UI", 11, "bold")).pack(pady=15, ipadx=20)
 
     def sniffer_loop(self, dev_name):
         log_msg(f"DEBUG: Starting sniffer loop on {dev_name}")
@@ -658,7 +820,8 @@ class DpsApp:
         # fp = bpf_program()
         # filter_exp = b"tcp port 16383"
         
-        self.lbl_status.config(text="Status: SNIFFER ACTIVO (Espiando...)")
+        
+        self.lbl_status.config(text=self.tr("STATUS_ACTIVE"))
         log_msg("DEBUG: Sniffer started successfully. Listening...")
         
         header = POINTER(pcap_pkthdr)()
