@@ -23,3 +23,9 @@ You must select the network card you're connected to the internet through. (Open
 If you can't find the correct network card, restart the program until you select it.
 
 /////////////////////////////////////////////////////////////
+
+
+
+pdt: si desean usar solo el archivo PY y no el EXE . deberan instalar Python 3.1 obligatoriamente e iniciar powershell o cmd en modo administrador .
+
+Note: If you only want to use the PY file and not the EXE, you must install Python 3.1 and run PowerShell or CMD as administrator.
