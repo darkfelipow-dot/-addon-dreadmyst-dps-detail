@@ -1,5 +1,31 @@
 hola , felipow por aqui .
 
+
+CHANGELOG
+- Añadido el Heal realizado.
+
+- Corregido la adicion de daño al tomar una pocion de vida o mana 
+
+- ya no suma el mana adquirido por habilidades como DPS 
+
+- se añadio un overlay de healing
+
+- solo se muestra el HEAL REALIZADO A OTROS jugadores por conflicto con los paquetes.
+
+
+CHANGELOG
+- Added the heal performed.
+
+- Fixed the damage added when using a health or mana potion.
+
+- Mana gained from abilities as DPS is no longer included.
+
+- Added a healing overlay.
+
+- Only heals performed on other players are displayed due to a conflict with the healing packages.
+
+
+
 Para poder usar el "Addon" o dps details es necesario instalar la herramienta de NPCAP 
 
 https://npcap.com  
