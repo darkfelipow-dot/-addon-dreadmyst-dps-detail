@@ -422,7 +422,7 @@ class DpsApp:
         frame_p.pack(fill="both", expand=True, pady=(0, 10))
         self.list_p = tk.Listbox(frame_p, bg=COLOR_LIST_BG, fg="white", font=FONT_MONO, bd=0, selectbackground=COLOR_PLAYER_DEFAULT)
         self.list_p.pack(side="left", fill="both", expand=True)
-        self.list_p.bind('<Double-1>', lambda e: self.rename_entry(self.list_p, True))
+        self.list_p.bind('<Double-1>', lambda e: self.rename_entry(self.list_p, self.player_hits))
         scroll_p = tk.Scrollbar(frame_p, orient="vertical", command=self.list_p.yview)
         scroll_p.pack(side="left", fill="y")
         self.list_p.config(yscrollcommand=scroll_p.set)
@@ -462,7 +462,7 @@ class DpsApp:
         frame_h_list.pack(fill="both", expand=True)
         self.list_h = tk.Listbox(frame_h_list, bg=COLOR_LIST_BG, fg="#F48FB1", font=FONT_MONO, bd=0, selectbackground="#880E4F")
         self.list_h.pack(side="left", fill="both", expand=True)
-        self.list_h.bind('<Double-Button-1>', self.on_edit_name_h)
+        self.list_h.bind('<Double-1>', lambda e: self.rename_entry(self.list_h, self.player_heals))
         sb_h = tk.Scrollbar(frame_h_list, orient="vertical", command=self.list_h.yview)
         sb_h.pack(side="right", fill="y")
         self.list_h.config(yscrollcommand=sb_h.set)
@@ -475,7 +475,7 @@ class DpsApp:
         frame_m_list.pack(fill="both", expand=True)
         self.list_m = tk.Listbox(frame_m_list, bg=COLOR_LIST_BG, fg="white", font=FONT_MONO, bd=0, selectbackground=COLOR_MONSTER)
         self.list_m.pack(side="left", fill="both", expand=True)
-        self.list_m.bind('<Double-1>', lambda e: self.rename_entry(self.list_m, False))
+        self.list_m.bind('<Double-1>', lambda e: self.rename_entry(self.list_m, self.monster_hits))
         sb_m = tk.Scrollbar(frame_m_list, orient="vertical", command=self.list_m.yview)
         sb_m.pack(side="right", fill="y")
         self.list_m.config(yscrollcommand=sb_m.set)
@@ -529,41 +529,44 @@ class DpsApp:
     def reset_id(self):
         self.my_id = None
         self.ov_hp.canvas.itemconfigure(self.ov_hp.text_id, text=self.tr("HIT_TO_LOCK"))
-    def on_edit_name(self, event):
-        selection = self.list_p.curselection()
+    def rename_entry(self, listbox, data_source):
+        selection = listbox.curselection()
         if not selection: return
-        self._edit_name_logic(self.list_p.get(selection[0]))
-    def on_edit_name_h(self, event):
-        selection = self.list_h.curselection()
-        if not selection: return
-        self._edit_name_logic(self.list_h.get(selection[0]))
-    def _edit_name_logic(self, item_text):
+        item_text = listbox.get(selection[0])
         if not item_text or "|" not in item_text: return
+        
         full_name = item_text.split("|")[0].strip()
         target_id = None
-        for i, n in self.names_map.items():
-            if n == full_name:
-                target_id = i
+        
+        # 1. Search in names_map (reverse lookup)
+        for eid, name in self.names_map.items():
+            if name == full_name:
+                target_id = eid
                 break
-        if not target_id:
-             if full_name.startswith(".."): target_id = full_name 
-             else: target_id = full_name 
-        new_name = simpledialog.askstring(self.tr("EDIT_NAME"), f"Nombre para ID {target_id}:", parent=self.root)
-        if new_name:
-            pass 
-            found_id = None
-            for eid, name in self.names_map.items():
-                if name == full_name:
-                    found_id = eid
+        
+        # 2. Search in current data source by suffix if name is hidden
+        if not target_id and full_name.startswith(".."):
+            suffix = full_name[2:]
+            for eid in data_source.keys():
+                if str(eid).endswith(suffix):
+                    target_id = str(eid)
                     break
-            if not found_id:
-                 if full_name.isdigit(): found_id = full_name
-            if found_id:
-                self.names_map[found_id] = new_name
+
+        # 3. Fallback for explicit IDs
+        if not target_id and (full_name.isdigit() or full_name.startswith("..")):
+             # If it was ..XXXX and we didn't find it in data_source, we can't do much,
+             # but if it's digits, we use it. 
+             # Also if it's still starting with .. and we didn't find it, maybe suffix IS the id (unlikely but possible if short)
+             if full_name.isdigit(): target_id = full_name
+
+        if target_id:
+            old = self.names_map.get(str(target_id), "")
+            new_name = simpledialog.askstring(self.tr("RENAME"), f"{self.tr('NEW_NAME')} (ID: {target_id})", parent=self.root, initialvalue=old or full_name)
+            if new_name:
+                self.names_map[str(target_id)] = new_name
                 self.save_names()
-                self.title_update() 
-            else:
-                 messagebox.showinfo("Info", "No se pudo identificar el ID original. Asegúrate de editar nombres ya guardados o IDs completos.")
+        else:
+            messagebox.showinfo("Info", "No se pudo identificar el ID original para renombrar.")
     def update_dps_loop(self):
         py, my = self.list_p.yview(), self.list_m.yview()
         h = f"{self.tr('COL_NAME'):<20} | {self.tr('COL_DMG'):<10} | {self.tr('COL_DPS'):<10}"
