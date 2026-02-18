@@ -589,7 +589,7 @@ class DpsApp:
             self.ov_dps_m.update_list(sorted_m, self.names_map, self.start_times)
         ph = self.list_h.yview()
         self.list_h.delete(0, tk.END)
-        self.list_h.insert(tk.END, f"{'NOMBRE/ID':<20} | {'HEAL':<10}")
+        self.list_h.insert(tk.END, f"{self.tr('COL_NAME'):<20} | {'HEAL':<10}")
         self.list_h.insert(tk.END, "-"*40)
         sorted_heals = sorted(self.player_heals.items(), key=lambda x:x[1], reverse=True)
         for eid, amount in sorted_heals:
